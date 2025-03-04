@@ -1,6 +1,6 @@
 import express from "express";
 import jwt from "jsonwebtoken"
-import { JWT_secret, loginSchema, signupSchema } from "@repo/backend-common/config";
+import { JWT_secret, loginSchema, RoomSchema, signupSchema } from "@repo/backend-common/config";
 import { AuthRequest, middleware } from "./middleware";
 
 
@@ -39,6 +39,15 @@ app.post("/login", (req, res) => {
 
 
  app.get("/room",middleware,(req:AuthRequest,res)=>{
+  const roomId = req.body
+  const room_data=RoomSchema.safeParse(roomId)
+  if(room_data.success){
+    res.send("Room created successfully")
+  }
+  else{
+   res.send(room_data.error)
+  }
+  
   res.json({
     userId:req.userId
   })

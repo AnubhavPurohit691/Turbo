@@ -11,3 +11,7 @@ export const loginSchema = zod.object({
     password:zod.string().min(10)
 })
 
+export const RoomSchema = zod.object({  
+    room:zod.string().min(3).max(10)
+})
+
