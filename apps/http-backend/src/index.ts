@@ -1,12 +1,48 @@
 import express from "express";
+import jwt from "jsonwebtoken"
+import { JWT_secret, loginSchema, signupSchema } from "@repo/backend-common/config";
+import { AuthRequest, middleware } from "./middleware";
+
 
 const app = express();
 
-app.get("/", (req, res) => {
-  res.send("Hello World");
-  
+app.post("/signup", (req, res) => {
+ const user=req.body
+ const user_data=signupSchema.safeParse(user)
+ if(user_data.success){
+   res.send("User signed up successfully")
+ }
+ else{
+  res.send(user_data.error)
+}
+
 });
 
-app.listen(3000, () => {
+
+
+app.post("/login", (req, res) => {
+  const user=req.body
+  const user_data=loginSchema.safeParse(user)
+  if(user_data.success){
+    res.send("User signed up successfully")
+  }
+  else{
+   res.send(user_data.error)
+ }
+  const token = jwt.sign({email:user.email}, JWT_secret)
+  
+  res.json({
+   token:token
+  })
+   
+ });
+
+
+ app.get("/room",middleware,(req:AuthRequest,res)=>{
+  res.json({
+    userId:req.userId
+  })
+ })
+app.listen(9000, () => {
   console.log("Server is running on port 3000");
 });
