@@ -2,38 +2,65 @@ import express from "express";
 import jwt from "jsonwebtoken"
 import { JWT_secret, loginSchema, RoomSchema, signupSchema } from "@repo/backend-common/config";
 import { AuthRequest, middleware } from "./middleware";
-
+import {prismaClient} from "@repo/db/db"
+import bcrypt from "bcrypt"
 
 const app = express();
+app.use(express.json());
 
-app.post("/signup", (req, res) => {
+app.post("/signup", async (req, res) => {
  const user=req.body
  const user_data=signupSchema.safeParse(user)
- if(user_data.success){
-   res.send("User signed up successfully")
+ try {
+  if(user_data.success){
+    const hashedPassword=await bcrypt.hash(user_data.data.password,10)
+    const createuser = await prismaClient.user.create({
+      data: {
+        email: user_data.data.email,
+        password: hashedPassword,
+        name: user_data.data.name,
+      },
+    });
+    const token=jwt.sign({id:createuser.id},JWT_secret)
+    res.json({token,createuser});
+  } else {
+    res.send(user_data.error);
+  }
+ } catch (error) {
+  res.json({
+    error: "User already exists",
+  })
  }
- else{
-  res.send(user_data.error)
 }
-
-});
-
+);
 
 
-app.post("/login", (req, res) => {
+
+
+app.post("/login",async (req, res) => {
   const user=req.body
   const user_data=loginSchema.safeParse(user)
   if(user_data.success){
-    res.send("User signed up successfully")
-  }
-  else{
-   res.send(user_data.error)
- }
-  const token = jwt.sign({email:user.email}, JWT_secret)
-  
-  res.json({
-   token:token
+    const userdb= await prismaClient.user.findUnique({
+      where:{ 
+        email:user_data.data.email,
+      }
   })
+  if(userdb){
+    const validPassword = await bcrypt.compare(user_data.data.password, userdb.password);
+    if(validPassword){
+      const token=jwt.sign({id:userdb.id},JWT_secret)
+      res.json({
+        token:token
+      })
+    }
+  }
+}
+  else{
+   res.json({
+      error:"Invalid email or password"
+   })
+ }
    
  });
 
