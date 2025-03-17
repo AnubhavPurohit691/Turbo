@@ -24,7 +24,9 @@ app.post("/signup", async (req, res) => {
     const token=jwt.sign({id:createuser.id},JWT_secret)
     res.json({token,createuser});
   } else {
-    res.send(user_data.error);
+    res.json({
+      error: "Invalid data",
+    });
   }
  } catch (error) {
   res.json({
@@ -63,21 +65,33 @@ app.post("/login",async (req, res) => {
  }
    
  });
+   
 
-
- app.get("/room",middleware,(req:AuthRequest,res)=>{
+ app.get("/room",middleware,async (req:AuthRequest,res)=>{
   const roomId = req.body
   const room_data=RoomSchema.safeParse(roomId)
-  if(room_data.success){
-    res.send("Room created successfully")
+  if(!room_data.success){
+    res.json({
+      message:"Invalid data"
+    })  
+    return  
   }
-  else{
-   res.send(room_data.error)
+  const userId= req.userId
+  try {
+    const createRoom = await prismaClient.room.create({
+      data: {
+       slug: room_data.data.room,
+       userid: userId || "",
+      },
+    });
+    res.json({
+      roomid:createRoom.id
+    })
+  } catch (error) {
+    res.json({
+      error:"Room already exists"
+    })
   }
-  
-  res.json({
-    userId:req.userId
-  })
  })
 app.listen(9000, () => {
   console.log("Server is running on port 3000");
