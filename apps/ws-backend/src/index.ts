@@ -48,24 +48,24 @@ return
         if(!user){
           return
         }
-        user.room.push(parseddata.roomid)
+        user.room.push(parseddata.roomId)
     }
     if(parseddata.type==="leave"){
       const user = Users.find(u=>u.ws===ws)
       if(!user){
         return
       }
-      user.room = user.room.filter(r=>r!==parseddata.roomid)
+      user.room = user.room.filter(r=>r!==parseddata.roomId)
     }
     if(parseddata.type==="chat"){
       const user = Users.find(u=>u.ws===ws)
       const message = parseddata.message
-      const room = parseddata.roomid
+      const room = parseddata.roomId
       if(!user){
         return
       }
 
-      if(!user.room.includes(parseddata.roomid)){
+      if(!user.room.includes(parseddata.roomId)){
         return
       }
 
