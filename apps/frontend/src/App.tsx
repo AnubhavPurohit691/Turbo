@@ -5,6 +5,7 @@ import ProtectedRoute from '../protection/Protection'
 import Login from "./auth/Login"
 import ErrorPage from './page/ErrorPage'
 import Chat from './page/Chat'
+import Chatbox from './page/Chatbox'
 
 function App() {
 
@@ -16,6 +17,11 @@ function App() {
         <Route path="/chat" element={
           <ProtectedRoute>
             <Chat/>
+          </ProtectedRoute>
+        } />
+        <Route path="/chat/:roomid" element={
+          <ProtectedRoute>
+            <Chatbox/>
           </ProtectedRoute>
         } />
         <Route path="*" element={<ErrorPage/>} />

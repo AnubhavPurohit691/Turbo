@@ -13,5 +13,5 @@ export const loginSchema = zod.object({
 })
 
 export const RoomSchema = zod.object({  
-    room:zod.string().min(3).max(10)
+    roomId:zod.string().min(3).max(10)
 })

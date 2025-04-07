@@ -66,9 +66,10 @@ router.post("/signup", async (req, res) => {
     });
       
    
-    router.get("/room",middleware,async (req:AuthRequest,res)=>{
-     const roomId = req.body
-     const room_data=RoomSchema.safeParse(roomId)
+    router.post("/room",middleware,async (req:AuthRequest,res)=>{
+     const roomId = req.body.roomId
+     console.log(roomId)
+     const room_data=RoomSchema.safeParse({roomId})
      if(!room_data.success){
        res.json({
          message:"Invalid data"
@@ -79,7 +80,7 @@ router.post("/signup", async (req, res) => {
      try {
        const createRoom = await prismaClient.room.create({
          data: {
-          slug: room_data.data.room,
+          slug: room_data.data.roomId,
           userid: userId || "",
          },
        });
@@ -96,7 +97,7 @@ router.post("/signup", async (req, res) => {
    router.get("/chats/:roomId",async(req,res)=>{
     try {
       const roomId = String(req.params.roomId);
-      console.log(req.params.roomId);
+      
       const messages = await prismaClient.chat.findMany({
           where: {
               roomId: roomId

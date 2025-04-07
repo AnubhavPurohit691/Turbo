@@ -15,6 +15,7 @@ export function middleware (req:AuthRequest,res:Response,next:NextFunction){
         const decoded = jwt.verify(token!, JWT_secret) as JwtPayload
 
         req.userId=decoded.id
+        console.log(decoded.id)
         next()
     } catch (error) {
         res.status(500).json({
