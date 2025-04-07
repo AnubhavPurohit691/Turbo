@@ -2,7 +2,7 @@ import axios from "axios"
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema } from "@repo/backend-common/config";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { login } from "./auth";
 
 type FormData = {
@@ -12,6 +12,7 @@ type FormData = {
 };
 
 export default function Login() {
+    const navigate = useNavigate()
   
     const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
         defaultValues: { email: "", password: "" },
@@ -21,6 +22,7 @@ export default function Login() {
     async function onSubmit(data: FormData) {
         try {
             await login(data.email, data.password)
+            navigate("/chat")
         } catch (error) {
             console.log(error)
         }
@@ -81,7 +83,7 @@ export default function Login() {
                             type="submit"
                             className="w-full px-4 py-3 text-white font-medium bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg hover:from-blue-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all transform hover:scale-105"
                         >
-                            Create Account
+                            Login
                         </button>
                     </div>
 

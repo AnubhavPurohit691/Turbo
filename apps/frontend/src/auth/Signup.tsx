@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signupSchema } from "@repo/backend-common/config";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { signup } from "./auth";
 
 type FormData = {
@@ -11,6 +11,7 @@ type FormData = {
 };
 
 export default function Signup() {
+    const navigate = useNavigate()
   
     const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
         defaultValues: { email: "", password: "", name: "" },
@@ -20,6 +21,7 @@ export default function Signup() {
     async function onSubmit(data: FormData) {
 
         await signup(data.name, data.email, data.password)
+        navigate("/chat")
        
         
     }
