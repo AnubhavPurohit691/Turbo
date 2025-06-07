@@ -2,6 +2,14 @@ import { WebSocket, WebSocketServer } from 'ws';
 import {JWT_secret} from "@repo/backend-common/config"
 import jwt, { JwtPayload } from "jsonwebtoken"
 import { prismaClient } from '@repo/db/db';
+import dotenv from "dotenv"
+import { createClient } from 'redis';
+dotenv.config()
+
+const pub =  createClient({
+  url:process.env.redis_Url||"",
+})
+const sub=pub.duplicate()
 
 interface users{
   ws:WebSocket
@@ -11,6 +19,25 @@ interface users{
 
 const Users:users[]=[]
 
+async function connectredis(){
+  await pub.connect()
+  await sub.connect()
+
+  await sub.pSubscribe("*",(data,channel)=>{
+    const parsed=JSON.parse(data)
+    Users.map((user)=>{
+     if(user.room.includes(channel)){
+      user.ws.send(JSON.stringify({
+            type: "chat",
+            message: parsed.message,
+            room: parsed.room
+          }))
+     }
+    })
+  })
+
+
+}
 
 const wss = new WebSocketServer({ port: 8080 });
 function checktoken(token:string):string|null{
@@ -22,7 +49,6 @@ function checktoken(token:string):string|null{
   return decoded.id
   } catch (error) {
     return null
-    
   }
 }
 
@@ -42,6 +68,7 @@ return
   Users.push({ws,userid,room:[]})
   
   ws.on('message', async function message(data) {
+    
     const parseddata = JSON.parse(data.toString())
     if(parseddata.type==="join"){
         const user = Users.find(u=>u.ws===ws)
@@ -60,7 +87,7 @@ return
     if(parseddata.type==="chat"){
       const user = Users.find(u=>u.ws===ws)
       const message = parseddata.message
-      const room = parseddata.roomId
+      const roomId = parseddata.roomId
       if(!user){
         return
       }
@@ -72,22 +99,23 @@ return
       await prismaClient.chat.create({
         data:{
           message,
-          roomId: room,
+          roomId: roomId,
           userId: userid
         }
       })
 
-      Users.forEach((user)=>{
-        if(user.room.includes(room)){
-          user.ws.send(JSON.stringify({
-            type:"chat",
-            message,
-            room
-          }))
-        }
-        })
+
+      await pub.publish(roomId,JSON.stringify({
+        type:"chat",
+        message,
+        room:roomId
+      }))
+
+      
     }
   });
 
   
 });
+
+connectredis().then(()=>console.log("redis is connected"))

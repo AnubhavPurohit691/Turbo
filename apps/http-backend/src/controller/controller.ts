@@ -103,7 +103,7 @@ router.post("/signup", async (req, res) => {
               roomId: roomId
           },
           orderBy: {
-              id: "desc"
+              createdAt: "asc"
           },
           take: 50
       });
